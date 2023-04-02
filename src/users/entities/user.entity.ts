@@ -8,12 +8,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { BaseEntity } from 'src/core/entities/base.entity';
-import { FileEntity } from 'src/files/entities/file.entity';
-import { FolderEntity } from 'src/folders/entities/folders.entity';
-import { SharedFileEntity } from 'src/shared-files/entities/shared-file.entity';
-import { SharedFolderEntity } from 'src/shared-folders/entities/shared-folder.entity';
+import { FileEntity } from '../../files/entities/file.entity';
+import { FolderEntity } from '../../folders/entities/folders.entity';
+import { SharedFileEntity } from '../../shared-files/entities/shared-file.entity';
 import { Exclude } from 'class-transformer';
+import { SharedFolderEntity } from '../../shared-folders/entities/shared-folder.entity';
 
 @Entity('users')
 export class UserEntity {

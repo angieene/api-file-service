@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
 
-import { BaseEntity } from 'src/core/entities/base.entity';
-import { UserEntity } from 'src/users/entities/user.entity';
-import { FileEntity } from 'src/files/entities/file.entity';
-import { SharedFolderEntity } from 'src/shared-folders/entities/shared-folder.entity';
+import { BaseEntity } from '../../core/entities/base.entity';
+import { UserEntity } from '../../users/entities/user.entity';
+import { FileEntity } from '../../files/entities/file.entity';
+import { SharedFolderEntity } from '../../shared-folders/entities/shared-folder.entity';
 
 @Entity('folders')
 export class FolderEntity extends BaseEntity {

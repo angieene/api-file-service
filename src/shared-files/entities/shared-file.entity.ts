@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne } from 'typeorm';
 
-import { BaseEntity } from 'src/core/entities/base.entity';
-import { UserEntity } from 'src/users/entities/user.entity';
-import { FileEntity } from 'src/files/entities/file.entity';
-import { PermissionsEnum } from 'src/core/enums';
+import { BaseEntity } from '../../core/entities/base.entity';
+import { UserEntity } from '../../users/entities/user.entity';
+import { FileEntity } from '../../files/entities/file.entity';
+import { PermissionsEnum } from '../../core/enums';
 
 @Entity('shared_files')
 export class SharedFileEntity extends BaseEntity {

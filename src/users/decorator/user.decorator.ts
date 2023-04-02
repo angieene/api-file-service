@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
-import { TODO_ANY } from 'src/core/types/main';
+import { TODO_ANY } from '../../core/types/main';
 
 export const User = createParamDecorator(
   (_: unknown, ctx: ExecutionContext) => {
