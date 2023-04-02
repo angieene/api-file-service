@@ -33,17 +33,18 @@ export class FolderEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   description: string;
 
+  @ApiProperty({ type: Boolean })
+  @Column({ default: true })
+  isPublic: boolean;
+
   @ManyToOne(() => UserEntity, (user) => user.folders)
   user: UserEntity;
-
-  // @ManyToMany(() => UserEntity, (user) => user.folders)
-  // users: UserEntity[];
 
   @ApiProperty({ type: [SharedFolderEntity] })
   @OneToMany(() => SharedFolderEntity, (sharedFolder) => sharedFolder.folder)
   shared_folders: SharedFolderEntity[];
 
-  @OneToMany(() => FileEntity, (file) => file.folder)
+  @OneToMany(() => FileEntity, (file) => file.parentFolder)
   files: FileEntity[];
 
   @ManyToOne(() => FolderEntity, (folder) => folder.children, {

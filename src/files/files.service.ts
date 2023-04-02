@@ -4,6 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IPositiveRequest } from 'src/core/types/main';
+import { UserEntity } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateFileDto } from './dto/create-file.dto';
 import { UpdateFileDto } from './dto/update-file.dto';
@@ -15,6 +17,30 @@ export class FilesService {
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
   ) {}
+
+  async addFile(file: Express.Multer.File): Promise<IPositiveRequest> {
+    const { originalname, mimetype, path, buffer, size } = file;
+
+    const newFile = this.fileRepository.create();
+
+    if (!newFile) {
+      throw new BadRequestException('Couldn`t create file');
+    }
+
+    newFile.name = originalname;
+    newFile.mimetype = mimetype;
+    newFile.size = size;
+    newFile.path = path;
+    newFile.buffer = buffer;
+
+    const savedFile = await this.fileRepository.save(newFile);
+
+    if (!savedFile) {
+      throw new BadRequestException('Couldn`t save file');
+    }
+
+    return { success: true };
+  }
 
   async findOneById(fileId: string): Promise<FileEntity> {
     const car = await this.fileRepository.findOne({ where: { id: fileId } });
@@ -44,23 +70,12 @@ export class FilesService {
   //   return { success: true };
   // }
 
-  create(createFileDto: CreateFileDto) {
-    return 'This action adds a new file';
-  }
+  // async getFileById(id: string): Promise<FileEntity> {
+  //   return await this.fileRepository.findOne({ id: id });
+  // }
 
-  findAll() {
-    return `This action returns all files`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} file`;
-  }
-
-  update(id: number, updateFileDto: UpdateFileDto) {
-    return `This action updates a #${id} file`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} file`;
-  }
+  // async deleteFileById(id: string): Promise<IPositiveRequest> {
+  //   await this.fileRepository.delete(id);
+  //   return { success: true };
+  // }
 }

@@ -18,12 +18,16 @@ export class FileEntity extends BaseEntity {
   name: string;
 
   @ApiProperty({ type: String })
-  @Column({ type: 'varchar', nullable: false })
-  file: string;
+  @Column({ nullable: false })
+  buffer: Buffer;
 
   @ApiProperty({ type: String })
   @Column({ type: 'varchar', nullable: false })
-  extension: string;
+  mimetype: string;
+
+  @ApiProperty({ type: String })
+  @Column({ type: 'varchar', nullable: false })
+  encoding: string;
 
   @ApiProperty({ type: Number })
   @Column({ type: 'int', nullable: false })
@@ -33,9 +37,17 @@ export class FileEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   description: string;
 
+  @ApiProperty({ type: String })
+  @Column({ type: 'varchar', nullable: false })
+  path: string;
+
+  @ApiProperty({ type: Boolean })
+  @Column({ default: true })
+  isPublic: boolean;
+
   @ApiProperty({ type: FolderEntity })
   @ManyToOne(() => FolderEntity, (folder) => folder.files)
-  folder: FolderEntity;
+  parentFolder: FolderEntity;
 
   @ApiProperty({ type: UserEntity })
   @ManyToOne(() => UserEntity, (user) => user.files)
