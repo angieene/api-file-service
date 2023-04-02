@@ -1,4 +1,4 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -31,6 +31,6 @@ export class AuthController {
       secure: false,
     });
 
-    return res.redirect(process.env.APP);
+    return HttpCode(401);
   }
 }
