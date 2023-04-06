@@ -4,7 +4,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
-import { UserRepository } from 'src/users/user.repository';
+import { UserRepository } from '../../users/user.repository';
 
 export type JwtPayload = {
   sub: string;

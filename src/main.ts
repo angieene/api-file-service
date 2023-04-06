@@ -22,7 +22,9 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api', app, document, {
+    customCssUrl: process.env.SWAGGER_CSS,
+  });
 
   await app.listen(3001);
 }
