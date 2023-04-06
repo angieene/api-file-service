@@ -4,7 +4,7 @@ import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from 'src/core/entities/base.entity';
 import { FolderEntity } from 'src/folders/entities/folders.entity';
 import { UserEntity } from 'src/users/entities/user.entity';
-import { SharedFileEntity } from 'src/shared-files/entities/shared-file.entity';
+import { PermissionEntity } from 'src/permisions/entities/permission.entity';
 
 @Entity('files')
 export class FileEntity extends BaseEntity {
@@ -17,9 +17,11 @@ export class FileEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   name: string;
 
-  @ApiProperty({ type: String })
-  @Column({ nullable: false })
-  buffer: Buffer;
+  @ApiProperty({ type: Uint8Array })
+  @Column({
+    type: 'bytea',
+  })
+  buffer: Uint8Array;
 
   @ApiProperty({ type: String })
   @Column({ type: 'varchar', nullable: false })
@@ -33,27 +35,19 @@ export class FileEntity extends BaseEntity {
   @Column({ type: 'int', nullable: false })
   size: number;
 
-  @ApiProperty({ type: String })
-  @Column({ type: 'varchar', nullable: false })
-  description: string;
-
-  @ApiProperty({ type: String })
-  @Column({ type: 'varchar', nullable: false })
-  path: string;
-
   @ApiProperty({ type: Boolean })
   @Column({ default: true })
   isPublic: boolean;
 
-  @ApiProperty({ type: FolderEntity })
-  @ManyToOne(() => FolderEntity, (folder) => folder.files)
+  @ApiProperty({ type: () => FolderEntity })
+  @ManyToOne(() => FolderEntity, (folder) => folder.childFiles)
   parentFolder: FolderEntity;
 
-  @ApiProperty({ type: UserEntity })
+  @ApiProperty({ type: () => UserEntity })
   @ManyToOne(() => UserEntity, (user) => user.files)
   user: UserEntity;
 
-  @ApiProperty({ type: [SharedFileEntity] })
-  @OneToMany(() => SharedFileEntity, (sharedFile) => sharedFile.file)
-  shared_files: SharedFileEntity[];
+  @ApiProperty({ type: [PermissionEntity] })
+  @OneToMany(() => PermissionEntity, (permissions) => permissions.file)
+  permissions: PermissionEntity[];
 }

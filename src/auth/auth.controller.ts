@@ -9,7 +9,9 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+
 import { AuthService } from './auth.service';
+import { GoogleOauthGuard } from './guards/google-auth.guard';
 
 interface AuthenticatedRequest extends Request {
   user?: any;
@@ -21,11 +23,11 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get()
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleOauthGuard)
   async googleAuth(@Req() req: Request) {}
 
   @Get('google/redirect')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleOauthGuard)
   async googleAuthCallback(
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
@@ -38,6 +40,8 @@ export class AuthController {
       secure: false,
     });
 
-    return res.redirect('http://localhost:3001');
+    res.redirect(process.env.HOME_REDIRECT);
+
+    return res.status(HttpStatus.OK);
   }
 }

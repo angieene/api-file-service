@@ -1,5 +1,4 @@
-export enum PermissionsEnum {
-  View = 'view',
-  Edit = 'edit',
-  Comnent = 'comment',
+export enum FilePermissionEnum {
+  VIEW = 'view',
+  EDIT = 'edit',
 }
