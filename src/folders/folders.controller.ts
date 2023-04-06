@@ -6,37 +6,113 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Query,
 } from '@nestjs/common';
-import { FoldesService } from './folders.service';
-import { CreateFoldeDto } from './dto/create-folde.dto';
-import { UpdateFoldeDto } from './dto/update-folde.dto';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
+import { User } from 'src/users/decorator/user.decorator';
+import { FilesService } from 'src/files/files.service';
+import { IPositiveRequest } from 'src/core/types/main';
+
+import { SerchfFoldersAndFilesDto } from './dto/search-folders-and-files.dto.ts';
+import { CreateFolderDto } from './dto/create-folder.dto';
+import { UpdateFolderDto } from './dto/update-folder.dto';
+import { GetFolderDto } from './dto/get-folders.dto';
+
+import { FoldesService } from './folders.service';
+import { FolderEntity } from './entities/folders.entity';
+
+@ApiTags('Folders')
 @Controller('foldes')
 export class FoldesController {
-  constructor(private readonly foldesService: FoldesService) {}
+  constructor(
+    private readonly foldesService: FoldesService,
+    private readonly filesService: FilesService,
+  ) {}
 
-  @Post()
-  create(@Body() createFoldeDto: CreateFoldeDto) {
-    return this.foldesService.create(createFoldeDto);
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Create Folder' })
+  @ApiBody({ type: CreateFolderDto })
+  @ApiResponse({ type: FolderEntity })
+  @UseGuards(AuthGuard('jwt'))
+  @Post('create')
+  async createFolder(
+    @Body() createFolderDto: CreateFolderDto,
+    @User('id') userId: string,
+  ): Promise<IPositiveRequest> {
+    return this.foldesService.createFolder(createFolderDto, userId);
   }
 
-  @Get()
-  findAll() {
-    return this.foldesService.findAll();
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get folder by id' })
+  @ApiResponse({ type: FolderEntity })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('get-one/:folderId')
+  async getFolder(@Param('folderId') folderId: string): Promise<FolderEntity> {
+    return this.foldesService.getFolderById(folderId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.foldesService.findOne(+id);
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get folders and files' })
+  @ApiResponse({ type: FolderEntity, isArray: true })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('get-all')
+  async getFolders(
+    @User('id') userId: string,
+    @Query() getFolderDto: GetFolderDto,
+  ): Promise<FolderEntity[]> {
+    return this.foldesService.findAll(userId, getFolderDto);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFoldeDto: UpdateFoldeDto) {
-    return this.foldesService.update(+id, updateFoldeDto);
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get folders and files by name' })
+  @ApiResponse({ type: FolderEntity, isArray: true })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('search')
+  async getFoldersAndFilesByName(
+    @User('id') userId: string,
+    @Query() serchfFoldersAndFilesDto: SerchfFoldersAndFilesDto,
+  ): Promise<any> {
+    const folders = await this.foldesService.searchFoldersByName(
+      userId,
+      serchfFoldersAndFilesDto.searchTerm,
+    );
+    const files = await this.filesService.searchFilesByName(
+      userId,
+      serchfFoldersAndFilesDto.searchTerm,
+    );
+
+    return [...folders, ...files];
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.foldesService.remove(+id);
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Update folder data' })
+  @ApiBody({ type: UpdateFolderDto })
+  @ApiResponse({ type: FolderEntity })
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('update/:folderId')
+  async uppdateFolder(
+    @Param('folderId') folderId: string,
+    @Body() updateFolderDto: UpdateFolderDto,
+  ): Promise<FolderEntity> {
+    return this.foldesService.updateFolder(updateFolderDto, folderId);
+  }
+
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Delete folder' })
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('delete/:folderId')
+  async deleteFolder(
+    @Param('folderId') folderId: string,
+  ): Promise<IPositiveRequest> {
+    return this.foldesService.deleteFolder(folderId);
   }
 }

@@ -7,7 +7,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-export class UpdateFileDto {
+export class UpdateFolderDto {
   @ApiPropertyOptional({ type: String })
   @IsNotEmpty()
   @IsString()
@@ -15,9 +15,8 @@ export class UpdateFileDto {
   @MaxLength(200)
   name?: string;
 
-  @ApiPropertyOptional({ type: String })
-  @IsNotEmpty()
-  @IsBoolean()
+  @ApiPropertyOptional({ type: Boolean })
   @IsOptional()
+  @IsBoolean()
   isPublic?: boolean;
 }

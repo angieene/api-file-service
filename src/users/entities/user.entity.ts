@@ -8,11 +8,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { FileEntity } from '../../files/entities/file.entity';
-import { FolderEntity } from '../../folders/entities/folders.entity';
-import { SharedFileEntity } from '../../shared-files/entities/shared-file.entity';
+import { FileEntity } from 'src/files/entities/file.entity';
+import { FolderEntity } from 'src/folders/entities/folders.entity';
 import { Exclude } from 'class-transformer';
-import { SharedFolderEntity } from '../../shared-folders/entities/shared-folder.entity';
+import { PermissionEntity } from 'src/permisions/entities/permission.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -59,13 +58,9 @@ export class UserEntity {
   @OneToMany(() => FolderEntity, (folder) => folder.user)
   folders: FolderEntity[];
 
-  @ApiProperty({ type: [SharedFolderEntity] })
-  @OneToMany(() => SharedFolderEntity, (sharedFolder) => sharedFolder.id)
-  shared_files: SharedFolderEntity[];
-
-  @ApiProperty({ type: [SharedFileEntity] })
-  @OneToMany(() => SharedFileEntity, (sharedFile) => sharedFile.id)
-  shared_folders: SharedFileEntity[];
+  @ApiProperty({ type: [PermissionEntity] })
+  @OneToMany(() => PermissionEntity, (sharedFolder) => sharedFolder.file)
+  shared_files: PermissionEntity[];
 
   @ApiProperty({ type: String })
   @Column({

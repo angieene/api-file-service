@@ -1,10 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 
-import { BaseEntity } from '../../core/entities/base.entity';
-import { UserEntity } from '../../users/entities/user.entity';
-import { FileEntity } from '../../files/entities/file.entity';
-import { SharedFolderEntity } from '../../shared-folders/entities/shared-folder.entity';
+import { BaseEntity } from 'src/core/entities/base.entity';
+import { UserEntity } from 'src/users/entities/user.entity';
+import { FileEntity } from 'src/files/entities/file.entity';
 
 @Entity('folders')
 export class FolderEntity extends BaseEntity {
@@ -17,40 +16,29 @@ export class FolderEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   name: string;
 
-  @ApiProperty({ type: String })
-  @Column({ type: 'varchar', nullable: false })
-  file: string;
+  @ApiProperty({ type: Boolean })
+  @Column({ default: true })
+  isPublic: boolean;
 
-  @ApiProperty({ type: String })
-  @Column({ type: 'varchar', nullable: false })
-  extension: string;
-
-  @ApiProperty({ type: Number })
-  @Column({ type: 'int', nullable: false })
-  size: number;
-
-  @ApiProperty({ type: String })
-  @Column({ type: 'varchar', nullable: false })
-  description: string;
-
+  @ApiProperty({ type: () => UserEntity })
   @ManyToOne(() => UserEntity, (user) => user.folders)
   user: UserEntity;
 
-  // @ManyToMany(() => UserEntity, (user) => user.folders)
-  // users: UserEntity[];
-
-  @ApiProperty({ type: [SharedFolderEntity] })
-  @OneToMany(() => SharedFolderEntity, (sharedFolder) => sharedFolder.folder)
-  shared_folders: SharedFolderEntity[];
-
-  @OneToMany(() => FileEntity, (file) => file.folder)
-  files: FileEntity[];
-
-  @ManyToOne(() => FolderEntity, (folder) => folder.children, {
+  @ApiProperty({ type: [FileEntity] })
+  @OneToMany(() => FileEntity, (file) => file.parentFolder, {
     nullable: true,
   })
-  parent: FolderEntity;
+  childFiles: FileEntity[];
 
-  @OneToMany(() => FolderEntity, (folder) => folder.parent)
-  children: FolderEntity[];
+  @ApiProperty({ type: () => FolderEntity })
+  @ManyToOne(() => FolderEntity, (folder) => folder.id, {
+    nullable: true,
+  })
+  parentFolder: FolderEntity;
+
+  @ApiProperty({ type: [FolderEntity] })
+  @OneToMany(() => FolderEntity, (folder) => folder.parentFolder, {
+    nullable: true,
+  })
+  childFolders: FolderEntity[];
 }
