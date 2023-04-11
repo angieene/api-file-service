@@ -20,7 +20,7 @@ import { AuthGuard } from '@nestjs/passport';
 
 import { User } from 'src/users/decorator/user.decorator';
 import { FilesService } from 'src/files/files.service';
-import { IPositiveRequest } from 'src/core/types/main';
+import { IPositiveRequest } from 'core/types/main';
 
 import { SerchfFoldersAndFilesDto } from './dto/search-folders-and-files.dto.ts';
 import { CreateFolderDto } from './dto/create-folder.dto';

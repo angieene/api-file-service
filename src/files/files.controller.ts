@@ -31,7 +31,7 @@ import { UpdateFileDto } from './dto/update-file.dto';
 import { CreateFileDto } from './dto/create-file.dto';
 
 import { User } from 'src/users/decorator/user.decorator';
-import { IPositiveRequest } from 'src/core/types/main';
+import { IPositiveRequest } from 'core/types/main';
 
 @ApiTags('Files')
 @Controller('files')

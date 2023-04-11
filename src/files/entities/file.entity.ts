@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 
-import { BaseEntity } from 'src/core/entities/base.entity';
+import { BaseEntity } from 'core/entities/base.entity';
 import { FolderEntity } from 'src/folders/entities/folders.entity';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { PermissionEntity } from 'src/permisions/entities/permission.entity';

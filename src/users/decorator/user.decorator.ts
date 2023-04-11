@@ -1,6 +1,6 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { IExpressRequest } from 'core/types/main';
 
-import { IExpressRequest } from 'src/core/types/main';
+import { ExecutionContext, createParamDecorator } from '@nestjs/common';
 
 export const User = createParamDecorator((data: any, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest<IExpressRequest>();

@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { FilePermissionEnum } from 'src/core/enums';
+import { FilePermissionEnum } from 'core/enums';
 import { FileEntity } from 'src/files/entities/file.entity';
 import { UserEntity } from 'src/users/entities/user.entity';
 

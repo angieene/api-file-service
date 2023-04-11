@@ -1,4 +1,4 @@
-import { FilePermissionEnum } from 'src/core/enums';
+import { FilePermissionEnum } from 'core/enums';
 
 export class ShareFileDto {
   isPublic: boolean;

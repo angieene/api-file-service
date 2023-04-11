@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository, TreeRepository } from 'typeorm';
 
-import { IPositiveRequest } from 'src/core/types/main';
+import { IPositiveRequest } from 'core/types/main';
 import { UserRepository } from 'src/users/user.repository';
 import { CreateFolderDto } from './dto/create-folder.dto';
 import { UpdateFolderDto } from './dto/update-folder.dto';
