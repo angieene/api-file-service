@@ -1,11 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsBoolean,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export class CreateFolderDto {
   @ApiProperty({ type: String })
@@ -15,12 +9,7 @@ export class CreateFolderDto {
   name: string;
 
   @ApiProperty({ type: String })
+  @IsUUID()
   @IsString()
-  @MaxLength(200)
   parentFolderId: string;
-
-  @ApiPropertyOptional({ type: Boolean })
-  @IsOptional()
-  @IsBoolean()
-  isPublic?: boolean;
 }

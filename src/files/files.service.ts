@@ -4,18 +4,20 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { IPositiveRequest } from 'src/core/types/main';
 import { CreateFileDto } from './dto/create-file.dto';
 import { UpdateFileDto } from './dto/update-file.dto';
 import { FileEntity } from './entities/file.entity';
+import { UserRepository } from 'src/users/user.repository';
 
 @Injectable()
 export class FilesService {
   constructor(
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
+    private readonly userRepository: UserRepository
   ) {}
 
   async saveFile(file: FileEntity): Promise<FileEntity> {
@@ -28,22 +30,27 @@ export class FilesService {
     return savedFile;
   }
 
-  async checkEqualFileName(fileName: string, fileId?: string): Promise<void> {
-    const equalFolder = await this.fileRepository.findOne({
-      where: {
-        name: fileName,
-        ...(fileId && { id: Not(fileId) }),
-      },
-    });
+  async checkEqualFileName(
+    fileName: string,
+    parentFolderId: string | null
+  ): Promise<void> {
+    const existingFile = await this.fileRepository
+      .createQueryBuilder('files')
+      .where('files.name = :name', { name: fileName })
+      .andWhere('files.parentFolderId = :parentFolderId', { parentFolderId })
+      .getOne();
 
-    if (equalFolder) throw new NotFoundException('Name is already exist');
+    if (existingFile) throw new NotFoundException('Name is already exist');
   }
 
   async uploadFile(
     file: Express.Multer.File,
     userId: string,
-    createFileDto: CreateFileDto,
+    createFileDto: CreateFileDto
   ): Promise<IPositiveRequest> {
+    const user = await this.userRepository.findOneById(userId);
+
+    const { parentFolderId } = createFileDto;
     const { originalname, mimetype, buffer, size } = file;
 
     const newFile = this.fileRepository.create();
@@ -52,6 +59,10 @@ export class FilesService {
       throw new BadRequestException('Couldn`t create file');
     }
 
+    if (parentFolderId) {
+      await this.checkEqualFileName(originalname, parentFolderId);
+    }
+    newFile.user = user;
     newFile.name = originalname;
     newFile.mimetype = mimetype;
     newFile.size = size;
@@ -59,17 +70,6 @@ export class FilesService {
 
     await this.saveFile(newFile);
     return { success: true };
-  }
-
-  async getSameFileName(fileName: string, fileId: string): Promise<FileEntity> {
-    const equalFile = await this.fileRepository.findOne({
-      where: {
-        name: fileName,
-        id: Not(fileId),
-      },
-    });
-
-    return equalFile;
   }
 
   async getFileById(fileId: string) {
@@ -85,7 +85,7 @@ export class FilesService {
 
   async updateFile(
     fileId: string,
-    updateFileDto: UpdateFileDto,
+    updateFileDto: UpdateFileDto
   ): Promise<FileEntity> {
     const { name, isPublic } = updateFileDto;
     const newFile = await this.getFileById(fileId);
@@ -109,11 +109,12 @@ export class FilesService {
 
   async searchFilesByName(
     userId: string,
-    searchTerm: string,
+    searchTerm: string
   ): Promise<FileEntity[]> {
     const queryBuilder = this.fileRepository
       .createQueryBuilder('files')
       .where('files.user = :userId', { userId: userId })
+      .andWhere('files.parentFolder IS NULL')
       .orderBy('files.created_at', 'DESC');
 
     if (searchTerm) {
@@ -126,15 +127,4 @@ export class FilesService {
 
     return searchFiles;
   }
-
-  // async cloneFile(id: number): Promise<File> {
-  //   const file = await this.getFileById(id);
-  //   const clonedFile = this.fileRepository.create({
-  //     ...file,
-  //     id: undefined,
-  //     name: `Copy of ${file.name}`,
-  //   });
-  //   await this.fileRepository.save(clonedFile);
-  //   return clonedFile;
-  // }
 }

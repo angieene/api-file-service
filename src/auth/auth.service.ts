@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { generateFromEmail } from 'unique-username-generator';
 
@@ -13,7 +9,7 @@ import { RegisterUserDto } from './dto/register-user.dto';
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    private userRepository: UserRepository,
+    private userRepository: UserRepository
   ) {}
 
   generateJwt(payload: string | object | Buffer) {
@@ -38,8 +34,6 @@ export class AuthService {
   }
 
   async registerUser(registerUserDto: RegisterUserDto) {
-    console.log(registerUserDto);
-
     const newUser = await this.userRepository.create(registerUserDto);
     newUser.username = generateFromEmail(registerUserDto.email, 5);
 

@@ -15,12 +15,12 @@ export class PermissionService {
     private readonly permissionRepository: Repository<PermissionEntity>,
     private readonly userRepository: UserRepository,
     private readonly filesService: FilesService,
-    private readonly mailerService: MailerService,
+    private readonly mailerService: MailerService
   ) {}
 
   async createPermission(
     createPermissionDto: CreatePermissionDto,
-    ownerId: string,
+    ownerId: string
   ): Promise<PermissionEntity> {
     const { email, fileId, type } = createPermissionDto;
     const owner = await this.userRepository.findOneById(ownerId);

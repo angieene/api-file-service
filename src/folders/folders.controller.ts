@@ -25,17 +25,17 @@ import { IPositiveRequest } from 'src/core/types/main';
 import { SerchfFoldersAndFilesDto } from './dto/search-folders-and-files.dto.ts';
 import { CreateFolderDto } from './dto/create-folder.dto';
 import { UpdateFolderDto } from './dto/update-folder.dto';
-import { GetFolderDto } from './dto/get-folders.dto';
 
 import { FoldesService } from './folders.service';
 import { FolderEntity } from './entities/folders.entity';
+import { JWTAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Folders')
-@Controller('foldes')
+@Controller('folders')
 export class FoldesController {
   constructor(
     private readonly foldesService: FoldesService,
-    private readonly filesService: FilesService,
+    private readonly filesService: FilesService
   ) {}
 
   @ApiBearerAuth('JWT-auth')
@@ -46,7 +46,7 @@ export class FoldesController {
   @Post('create')
   async createFolder(
     @Body() createFolderDto: CreateFolderDto,
-    @User('id') userId: string,
+    @User('id') userId: string
   ): Promise<IPositiveRequest> {
     return this.foldesService.createFolder(createFolderDto, userId);
   }
@@ -61,33 +61,21 @@ export class FoldesController {
   }
 
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Get folders and files' })
-  @ApiResponse({ type: FolderEntity, isArray: true })
-  @UseGuards(AuthGuard('jwt'))
-  @Get('get-all')
-  async getFolders(
-    @User('id') userId: string,
-    @Query() getFolderDto: GetFolderDto,
-  ): Promise<FolderEntity[]> {
-    return this.foldesService.findAll(userId, getFolderDto);
-  }
-
-  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get folders and files by name' })
   @ApiResponse({ type: FolderEntity, isArray: true })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JWTAuthGuard)
   @Get('search')
   async getFoldersAndFilesByName(
     @User('id') userId: string,
-    @Query() serchfFoldersAndFilesDto: SerchfFoldersAndFilesDto,
+    @Query() serchfFoldersAndFilesDto: SerchfFoldersAndFilesDto
   ): Promise<any> {
     const folders = await this.foldesService.searchFoldersByName(
       userId,
-      serchfFoldersAndFilesDto.searchTerm,
+      serchfFoldersAndFilesDto.searchTerm
     );
     const files = await this.filesService.searchFilesByName(
       userId,
-      serchfFoldersAndFilesDto.searchTerm,
+      serchfFoldersAndFilesDto.searchTerm
     );
 
     return [...folders, ...files];
@@ -98,10 +86,10 @@ export class FoldesController {
   @ApiBody({ type: UpdateFolderDto })
   @ApiResponse({ type: FolderEntity })
   @UseGuards(AuthGuard('jwt'))
-  @Patch('update/:folderId')
-  async uppdateFolder(
+  @Patch('rename/:folderId')
+  async updateFolder(
     @Param('folderId') folderId: string,
-    @Body() updateFolderDto: UpdateFolderDto,
+    @Body() updateFolderDto: UpdateFolderDto
   ): Promise<FolderEntity> {
     return this.foldesService.updateFolder(updateFolderDto, folderId);
   }
@@ -111,8 +99,16 @@ export class FoldesController {
   @UseGuards(AuthGuard('jwt'))
   @Delete('delete/:folderId')
   async deleteFolder(
-    @Param('folderId') folderId: string,
+    @Param('folderId') folderId: string
   ): Promise<IPositiveRequest> {
     return this.foldesService.deleteFolder(folderId);
+  }
+
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Find root folder' })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('root')
+  async getRoot(@User('id') userId: string): Promise<FolderEntity> {
+    return this.foldesService.getRoot(userId);
   }
 }

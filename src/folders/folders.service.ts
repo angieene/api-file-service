@@ -4,21 +4,20 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { Not, Repository, TreeRepository } from 'typeorm';
 
-import { FolderEntity } from './entities/folders.entity';
 import { IPositiveRequest } from 'src/core/types/main';
 import { UserRepository } from 'src/users/user.repository';
 import { CreateFolderDto } from './dto/create-folder.dto';
 import { UpdateFolderDto } from './dto/update-folder.dto';
-import { GetFolderDto } from './dto/get-folders.dto';
+import { FolderEntity } from './entities/folders.entity';
 
 @Injectable()
 export class FoldesService {
   constructor(
     @InjectRepository(FolderEntity)
     private readonly folderRepository: Repository<FolderEntity>,
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: UserRepository
   ) {}
 
   async saveFolder(folder: FolderEntity): Promise<FolderEntity> {
@@ -31,9 +30,13 @@ export class FoldesService {
     return savedFile;
   }
 
-  async getFolderById(folderId: string): Promise<FolderEntity> {
+  async getFolderById(folderId: string): Promise<any> {
+    const treeRepository = this.folderRepository as TreeRepository<
+      FolderEntity
+    >;
+
     const searchFolder = await this.folderRepository.findOne({
-      relations: ['user', 'folders', 'folders.user', 'folders.files', 'files'],
+      relations: ['user', 'childFolders', 'parentFolder', 'childFiles'],
       where: {
         id: folderId,
       },
@@ -42,13 +45,22 @@ export class FoldesService {
     if (!searchFolder) {
       throw new NotFoundException('Folder is not exist');
     }
+    const parentFolders: FolderEntity[] = [];
 
-    return searchFolder;
+    let parent = searchFolder.parentFolder;
+    while (parent) {
+      parentFolders.push(parent);
+      parent = parent.parentFolder;
+    }
+
+    const parents = await treeRepository.findAncestors(searchFolder);
+
+    return { ...searchFolder, parentFolders: parents };
   }
 
   async checkEqualFolderName(
     folderName: string,
-    folderId?: string,
+    folderId?: string
   ): Promise<void> {
     const equalFolder = await this.folderRepository.findOne({
       where: {
@@ -60,70 +72,53 @@ export class FoldesService {
     if (equalFolder) throw new NotFoundException('Name is already exist');
   }
 
+  async checkEqualFolderNameID(
+    folderName: string,
+    parentFolderId: string | null
+  ): Promise<void> {
+    const existingFolder = await this.folderRepository
+      .createQueryBuilder('folders')
+      .where('folders.name = :name', { name: folderName })
+      .andWhere('folders.parentFolderId = :parentFolderId', { parentFolderId })
+      .getOne();
+
+    if (existingFolder) throw new NotFoundException('Name is already exist');
+  }
+
   async createFolder(
     createFolderDto: CreateFolderDto,
-    userId: string,
+    userId: string
   ): Promise<IPositiveRequest> {
-    const { name, parentFolderId, isPublic } = createFolderDto;
+    const { name, parentFolderId } = createFolderDto;
     const user = await this.userRepository.findOneById(userId);
 
     const newFolder = this.folderRepository.create();
     if (!newFolder) {
       throw new BadRequestException('Couldn`t create folder');
     }
+    const parentFolder = await this.getFolderById(parentFolderId);
+    newFolder.parentFolderId = parentFolderId;
+    newFolder.parentFolder = parentFolder;
 
-    if (parentFolderId) {
-      const parentFolder = await this.getFolderById(parentFolderId);
-      newFolder.parentFolder = parentFolder;
-    }
+    await this.checkEqualFolderNameID(name, parentFolderId);
 
-    if (name) {
-      await this.checkEqualFolderName(name);
-      newFolder.name = name;
-    }
-
+    newFolder.name = name;
     newFolder.user = user;
-    newFolder.isPublic = isPublic ?? newFolder.isPublic;
 
     await this.saveFolder(newFolder);
 
     return { success: true };
   }
 
-  async findAll(
-    userId: string,
-    getFolderDto: GetFolderDto,
-  ): Promise<FolderEntity[]> {
-    const { parentFolderId } = getFolderDto;
-
-    const queryBuilder = this.folderRepository
-      .createQueryBuilder('folders')
-      .where('folders.user = :userId', { userId: userId })
-      .leftJoinAndSelect('folders.folders', 'childFolders')
-      .leftJoinAndSelect('childFolder.files', 'childFiles')
-      .orderBy('folders.name', 'ASC')
-      .addOrderBy('childFiles.name', 'ASC');
-
-    if (parentFolderId) {
-      queryBuilder.andWhere('folder.parentFolder.id = :parentId', {
-        parentId: parentFolderId,
-      });
-    }
-
-    return await queryBuilder.getMany();
-  }
-
   async updateFolder(
     updateFolderDto: UpdateFolderDto,
-    folderId: string,
+    folderId: string
   ): Promise<FolderEntity> {
     const { name } = updateFolderDto;
     const updateFolder = await this.getFolderById(folderId);
 
-    if (name) {
-      await this.checkEqualFolderName(name, folderId);
-      updateFolder.name = name;
-    }
+    await this.checkEqualFolderName(name, folderId);
+    updateFolder.name = name;
 
     return await this.saveFolder(updateFolder);
   }
@@ -137,14 +132,15 @@ export class FoldesService {
 
   async searchFoldersByName(
     userId: string,
-    searchTerm: string,
+    searchTerm: string
   ): Promise<FolderEntity[]> {
     const queryBuilder = this.folderRepository
       .createQueryBuilder('folders')
       .where('folders.user = :userId', { userId: userId })
-      .leftJoinAndSelect('folders.folders', 'childFolders')
-      .leftJoinAndSelect('childFolder.files', 'childFiles')
-      .orderBy('folders.created_at', 'DESC');
+      .andWhere('folders.parentFolder IS NULL')
+      .leftJoinAndSelect('folders.childFolders', 'childFolders')
+      .leftJoinAndSelect('folders.childFiles', 'childFiles')
+      .orderBy('folders.name', 'ASC');
 
     if (searchTerm) {
       queryBuilder.where('folders.name ILIKE :name', {
@@ -155,5 +151,17 @@ export class FoldesService {
     const searchFolders = await queryBuilder.getMany();
 
     return searchFolders;
+  }
+
+  async getRoot(userId: string): Promise<FolderEntity> {
+    const queryBuilder = this.folderRepository
+      .createQueryBuilder('folders')
+      .where('folders.user = :userId', { userId: userId })
+      .andWhere('folders.parentFolderId is NULL')
+      .leftJoinAndSelect('folders.childFolders', 'childFolders')
+      .orderBy('folders.name', 'ASC')
+      .getOne();
+
+    return queryBuilder;
   }
 }

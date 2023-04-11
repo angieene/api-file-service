@@ -18,7 +18,6 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
-  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -29,11 +28,9 @@ import { FileEntity } from './entities/file.entity';
 import { FilesService } from './files.service';
 
 import { UpdateFileDto } from './dto/update-file.dto';
-import { ShareFileDto } from './dto/share-file.dto';
 import { CreateFileDto } from './dto/create-file.dto';
 
 import { User } from 'src/users/decorator/user.decorator';
-import { UserEntity } from 'src/users/entities/user.entity';
 import { IPositiveRequest } from 'src/core/types/main';
 
 @ApiTags('Files')
@@ -57,7 +54,7 @@ export class FilesController {
   @Patch('update/:fileId')
   async updateFile(
     @Param('fileId') fileId: string,
-    @Body() updateFileDto: UpdateFileDto,
+    @Body() updateFileDto: UpdateFileDto
   ): Promise<FileEntity> {
     return this.filesService.updateFile(fileId, updateFileDto);
   }
@@ -97,18 +94,10 @@ export class FilesController {
         })
         .build({
           errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-        }),
+        })
     )
-    file: Express.Multer.File,
+    file: Express.Multer.File
   ) {
     return this.filesService.uploadFile(file, id, createFileDto);
   }
-
-  // @Get(':id')
-  // @ApiParam({ name: 'id', type: Number })
-  // @ApiResponse({ status: 200, type: File })
-  // @UseGuards(PermissionsGuard)
-  // async getFileById(@Param('id') id: number): Promise<File> {
-  //   return this.fileService.getFileById(id);
-  // }
 }

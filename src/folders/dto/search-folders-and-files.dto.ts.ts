@@ -5,6 +5,6 @@ export class SerchfFoldersAndFilesDto {
   @ApiPropertyOptional({ type: String })
   @IsString()
   @IsOptional()
-  @MaxLength(200)
+  @MaxLength(3000)
   searchTerm?: string;
 }

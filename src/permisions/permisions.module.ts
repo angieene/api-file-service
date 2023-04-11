@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { join } from 'path';
 
 import { FilesModule } from 'src/files/files.module';
 import { UsersModule } from 'src/users/users.module';
@@ -29,7 +28,7 @@ import { PermissionEntity } from './entities/permission.entity';
         from: '"No Reply" <noreply@example.com>',
       },
       template: {
-        dir: join(__dirname, 'templates'),
+        dir: 'templates',
         adapter: new HandlebarsAdapter(),
         options: {
           strict: true,

@@ -29,17 +29,11 @@ export class AuthController {
   @UseGuards(GoogleOauthGuard)
   async googleAuthCallback(
     @Req() req: AuthenticatedRequest,
-    @Res() res: Response,
+    @Res() res: Response
   ) {
     const token = await this.authService.signIn(req.user);
 
-    res.cookie('access_token', token, {
-      maxAge: 2592000000,
-      sameSite: true,
-      secure: false,
-    });
-
-    res.redirect(process.env.HOME_REDIRECT);
+    res.redirect(process.env.HOME_REDIRECT + `/auth/callback?token=${token}`);
 
     return res.status(HttpStatus.OK);
   }

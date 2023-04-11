@@ -5,6 +5,6 @@ export class GetFolderDto {
   @ApiPropertyOptional({ type: String })
   @IsString()
   @IsOptional()
-  @MaxLength(200)
-  parentFolderId?: string;
+  @MaxLength(3000)
+  searchTerm?: string;
 }

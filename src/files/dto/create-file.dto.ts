@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
 } from 'class-validator';
 
@@ -14,6 +15,7 @@ export class CreateFileDto {
   isPublic?: boolean;
 
   @ApiPropertyOptional({ type: String })
+  @IsUUID()
   @IsNotEmpty()
   @IsString()
   @IsOptional()
