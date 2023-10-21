@@ -22,12 +22,14 @@ class ConfigService {
 
   public getTypeOrmConfig(): TypeOrmModuleOptions {
     return {
+      autoLoadEntities: true,
       type: 'postgres',
-      url: this.getValue('DATABASE_URL'),
-      password: this.getValue('DATABASE_PASSWORD'),
+      port: 5432,
+      database: 'database',
+      username: 'angel',
+      password: 'secret',
       synchronize: true,
       logging: true,
-      entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     };
   }
 }
